@@ -6,25 +6,34 @@ import time
 import pandas as pd
 
 # ============================================================
-# 🔐 Conexión a MongoDB Atlas
+# 🔐 Conexión a MongoDB Atlas (DIRECTO - SIN SECRETS)
 # ============================================================
 st.set_page_config(page_title="Pomodoro Dashboard", layout="centered")
+
+# ⚠️ REEMPLAZA CON TUS CREDENCIALES REALES
+MONGO_USERNAME = "elefante123"  # 👈 Cambia esto
+MONGO_PASSWORD = "elefante123"  # 👈 Cambia esto
+MONGO_CLUSTER = "cluster0.le4sexx.mongodb.net"
+MONGO_DATABASE = "pomodoro_db"
+
+# Construcción de la URI
+MONGO_URI = f"mongodb+srv://elefante123:elefante123@cluster0.le4sexx.mongodb.net/"
 
 # Función para conectar a MongoDB con manejo de errores
 @st.cache_resource
 def init_connection():
     try:
-        mongo_uri = st.secrets["mongodb"]["uri"]
-        client = MongoClient(mongo_uri, serverSelectionTimeoutMS=5000)
+        client = MongoClient(MONGO_URI, serverSelectionTimeoutMS=5000)
         # Test de conexión
         client.admin.command('ping')
+        st.sidebar.success("✅ Conectado a MongoDB")
         return client
     except ConnectionFailure:
         st.error("❌ Error de conexión a MongoDB. Verifica tu conexión a internet.")
         return None
     except OperationFailure as e:
         st.error(f"❌ Error de autenticación: {str(e)}")
-        st.info("Verifica:\n- Usuario y contraseña correctos\n- IP whitelist configurada\n- Permisos del usuario")
+        st.info("Verifica:\n- Usuario y contraseña correctos\n- IP whitelist configurada (0.0.0.0/0)\n- Permisos del usuario")
         return None
     except Exception as e:
         st.error(f"❌ Error inesperado: {str(e)}")
@@ -35,7 +44,7 @@ client = init_connection()
 if client is None:
     st.stop()
 
-db = client["pomodoro_db"]
+db = client[MONGO_DATABASE]
 collection = db["sessions"]
 
 # ============================================================
